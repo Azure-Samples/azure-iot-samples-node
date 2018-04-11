@@ -1,0 +1,1 @@
+This sample is called simple-device-sample in our Node repo.
