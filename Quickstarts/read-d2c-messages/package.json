@@ -1,0 +1,22 @@
+{
+  "name": "back-end-application",
+  "version": "1.0.0",
+  "description": "Back-end application in the IoT Hub quickstart device-to-cloud sample",
+  "main": "ReadDeviceToCloudMessages.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azure-Samples/iot-hub-quickstarts.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azure-Samples/iot-hub-quickstarts/issues"
+  },
+  "homepage": "https://github.com/Azure-Samples/iot-hub-quickstarts#readme",
+  "dependencies": {
+    "azure-event-hubs": "latest"
+  }
+}
