@@ -19,7 +19,7 @@ var client = Client.fromConnectionString(connectionString);
 var methodParams = {
   methodName: 'SetTelemetryInterval',
   payload: 10, // Number of seconds.
-  timeoutInSeconds: 30
+  responseTimeoutInSeconds: 30
 };
 
 // Call the direct method on your device using the defined parameters.

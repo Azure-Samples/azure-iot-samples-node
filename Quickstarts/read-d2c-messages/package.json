@@ -1,5 +1,5 @@
 {
-  "name": "back-end-application",
+  "name": "read-d2c-messages",
   "version": "1.0.0",
   "description": "Back-end application in the IoT Hub quickstart device-to-cloud sample",
   "main": "ReadDeviceToCloudMessages.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Azure-Samples/iot-hub-quickstarts.git"
+    "url": "git+https://github.com/Azure-Samples/azure-iot-samples-node.git"
   },
-  "author": "",
+  "author": "Microsoft Corporation",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Azure-Samples/iot-hub-quickstarts/issues"
+    "url": "https://github.com/Azure-Samples/azure-iot-samples-node/issues"
   },
-  "homepage": "https://github.com/Azure-Samples/iot-hub-quickstarts#readme",
+  "homepage": "https://github.com/Azure-Samples/azure-iot-samples-node#readme",
   "dependencies": {
-    "azure-event-hubs": "latest"
+    "azure-event-hubs": "0.0.8"
   }
 }

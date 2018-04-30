@@ -1,5 +1,7 @@
 'use strict';
 
+const chalk = require('chalk');
+
 // The device connection string to authenticate the device with your IoT hub.
 // Using the Azure CLI:
 // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyNodeDevice --output table
@@ -8,17 +10,14 @@ var connectionString = '{Your device connection string here}';
 // Using the Node.js Device SDK for IoT Hub:
 //   https://github.com/Azure/azure-iot-sdk-node
 // The sample connects to a device-specific MQTT endpoint on your IoT Hub.
-var clientFromConnectionString = require('azure-iot-device-mqtt').clientFromConnectionString;
+var Mqtt = require('azure-iot-device-mqtt').Mqtt;
+var DeviceClient = require('azure-iot-device').Client
 var Message = require('azure-iot-device').Message;
 
-var client = clientFromConnectionString(connectionString);
+var client = DeviceClient.fromConnectionString(connectionString, Mqtt);
 
 // Timeout created by setInterval
 var intervalLoop = null;
-
-// Colored text in console
-var greenText = '\x1b[32m%s\x1b[0m';
-var redText = '\x1b[31m%s\x1b[0m';
 
 // Print results.
 function printResultFor(op) {
@@ -33,18 +32,18 @@ function onSetTelemetryInterval(request, response) {
   // Function to send a direct method reponse to your IoT hub.
   function directMethodResponse(err) {
     if(err) {
-      console.error(redText, 'An error ocurred when sending a method response:\n' + err.toString());
+      console.error(chalk.red('An error ocurred when sending a method response:\n' + err.toString()));
     } else {
-        console.log(greenText, 'Response to method \'' + request.methodName + '\' sent successfully.' );
+        console.log(chalk.green('Response to method \'' + request.methodName + '\' sent successfully.' ));
     }
   }
 
-  console.log(greenText, 'Direct method payload received:')
-  console.log(greenText, request.payload);
+  console.log(chalk.green('Direct method payload received:'));
+  console.log(chalk.green(request.payload));
 
   // Check that a numeric value was passed as a parameter
   if (isNaN(request.payload)) {
-    console.log(redText, 'Invalid interval response received in payload');
+    console.log(chalk.red('Invalid interval response received in payload'));
     // Report failure back to your hub.
     response.send(400, 'Invalid direct method parameter: ' + request.payload, directMethodResponse);
 
@@ -78,20 +77,8 @@ function sendMessage(){
   client.sendEvent(message, printResultFor('send'));
 }
 
-// Callback function to run after connecting to the IoT hub.
-var connectCallback = function (err) {
-  if (err) {
-    console.log('Could not connect: ' + err);
-  } else {
-    console.log('Client connected');
+// Set up the handler for the SetTelemetryInterval direct method call.
+client.onDeviceMethod('SetTelemetryInterval', onSetTelemetryInterval);
 
-    // Set up the handler for the SetTelemetryInterval direct method call.
-    client.onDeviceMethod('SetTelemetryInterval', onSetTelemetryInterval);
-
-    // Create a message and send it to the IoT hub, initially every second.
-    intervalLoop = setInterval(sendMessage, 1000);
-  }
-};
-
-// Connect to the IoT hub.
-client.open(connectCallback);
+// Create a message and send it to the IoT hub, initially every second.
+intervalLoop = setInterval(sendMessage, 1000);

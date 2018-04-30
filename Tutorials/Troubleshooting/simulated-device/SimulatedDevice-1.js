@@ -8,11 +8,11 @@ var connectionString = '{your device connection string}';
 // Using the Node.js Device SDK for IoT Hub:
 //   https://github.com/Azure/azure-iot-sdk-node
 // The sample connects to a device-specific MQTT endpoint on your IoT Hub.
-var Protocol = require('azure-iot-device-mqtt').Mqtt;
+var Mqtt = require('azure-iot-device-mqtt').Mqtt;
 var Client = require('azure-iot-device').Client;
 var Message = require('azure-iot-device').Message;
 var NoRetry = require('azure-iot-common').NoRetry;
-var client = Client.fromConnectionString(connectionString, Protocol);
+var client = Client.fromConnectionString(connectionString, Mqtt);
 
 console.log('IoT Hub troubleshooting tutorial\nSimulated device #1\n')
 // Disable retries so you see the connection error immediately
