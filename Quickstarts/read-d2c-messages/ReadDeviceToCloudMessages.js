@@ -5,7 +5,9 @@
 // NOTE:
 // For simplicity, this sample sets the connection string in code.
 // In a production environment, the recommended approach is to use
-// an environment variable to make it available to your application.
+// an environment variable to make it available to your application
+// or use an x509 certificate.
+// https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-security
 //
 // Using the Azure CLI:
 // az iot hub show-connection-string --hub-name {YourIoTHubName} --output table
