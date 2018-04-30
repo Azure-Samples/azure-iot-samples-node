@@ -1,6 +1,12 @@
 'use strict';
 
 // Connection string for the IoT Hub service
+//
+// NOTE:
+// For simplicity, this sample sets the connection string in code.
+// In a production environment, the recommended approach is to use
+// an environment variable to make it available to your application.
+//
 // Using the Azure CLI:
 // az iot hub show-connection-string --hub-name {YourIoTHubName} --output table
 var connectionString = '{Your service connection string here}';

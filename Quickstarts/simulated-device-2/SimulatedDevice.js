@@ -1,6 +1,12 @@
 'use strict';
 
 // The device connection string to authenticate the device with your IoT hub.
+//
+// NOTE:
+// For simplicity, this sample sets the connection string in code.
+// In a production environment, the recommended approach is to use
+// an environment variable to make it available to your application.
+//
 // Using the Azure CLI:
 // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyNodeDevice --output table
 var connectionString = '{Your device connection string here}';
