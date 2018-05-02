@@ -8,7 +8,7 @@ var test_token = '{your test token}'
 //   https://github.com/Azure/azure-iot-sdk-node
 // The sample connects to a device-specific MQTT endpoint on your IoT Hub.
 
-var Protocol = require('azure-iot-device-mqtt').Mqtt;
+var Mqtt = require('azure-iot-device-mqtt').Mqtt;
 var Client = require('azure-iot-device').Client;
 var Message = require('azure-iot-device').Message;
 var NoRetry = require('azure-iot-common').NoRetry;
@@ -49,7 +49,7 @@ var generateSasToken = function(resourceUri, signingKey, policyName, expiresInMi
 //  null,
 //  expiryInMins)
 
-var client = Client.fromSharedAccessSignature(test_token, Protocol);
+var client = Client.fromSharedAccessSignature(test_token, Mqtt);
 
 console.log('IoT Hub troubleshooting tutorial\nSimulated device #2\n')
 // Disable retries so you see the connection error immediately
