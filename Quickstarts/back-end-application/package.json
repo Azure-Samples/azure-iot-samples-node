@@ -1,0 +1,22 @@
+{
+  "name": "back-end-application",
+  "version": "1.0.0",
+  "description": "Back-end application in the IoT Hub quickstart cloud-to-device sample",
+  "main": "BackendApplication.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azure-Samples/azure-iot-samples-node.git"
+  },
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azure-Samples/azure-iot-samples-node/issues"
+  },
+  "homepage": "https://github.com/Azure-Samples/azure-iot-samples-node#readme",
+  "dependencies": {
+    "azure-iothub": "1.3.0"
+  }
+}
