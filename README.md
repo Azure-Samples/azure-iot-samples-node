@@ -1,57 +1,18 @@
-# Project Name
+---
+services: iot-hub 
+platforms: nodejs
+author: azure-iot-sdks
+---
 
-(short, 1-3 sentenced, description of the project)
+# Azure IoT Samples for Node.js
 
-## Features
+azure-iot-samples-node provides a set of easy-to-understand, continuously-tested samples for connecting to Azure IoT Hub via Azure/azure-iot-sdk-node.
 
-This project framework provides the following features:
+## Prerequisites
 
-* Feature 1
-* Feature 2
-* ...
-
-## Getting Started
-
-### Prerequisites
-
-(ideally very short, if any)
-
-- OS
-- Library version
-- ...
-
-### Installation
-
-(ideally very short)
-
-- npm install [package name]
-- mvn install
-- ...
-
-### Quickstart
-(Add steps to get up and running quickly)
-
-1. git clone [repository clone url]
-2. cd [respository name]
-3. ...
-
-
-## Demo
-
-A demo app is included to show how to use the project.
-
-To run the demo, follow these steps:
-
-(Add steps to start up the demo)
-
-1.
-2.
-3.
+- Node.js v4.x.x or later on your development machine.  You can download Node.js for multiple platforms from [nodejs.org](https://nodejs.org).  You can verify the current version of Node.js on your development machine using "node --version"
 
 ## Resources
 
-(Any additional resources or related projects)
-
-- Link to supporting information
-- Link to similar sample
-- ...
+- [azure-iot-sdk-node](https://github.com/Azure/azure-iot-sdk-node): contains the source code for Azure IoT Node SDK.
+- [Azure IoT Hub Documentation](https://docs.microsoft.com/azure/iot-hub/)
