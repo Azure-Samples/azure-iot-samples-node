@@ -7,8 +7,10 @@ const chalk = require('chalk');
 var Client = require('azure-iot-device').Client;
 var Protocol = require('azure-iot-device-mqtt').Mqtt;
 
+// <createhubclient>
 // Get the device connection string from a command line argument
 var connectionString = process.argv[2];
+// </createhubclient>
 
 // Create a patch to send to the hub
 var reportedPropertiesPatch = {
