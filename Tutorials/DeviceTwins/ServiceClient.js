@@ -6,21 +6,25 @@
 const chalk = require('chalk');
 var Registry = require('azure-iothub').Registry;
 
+// Get the service connection string from a command line argument
 var connectionString = process.argv[2];
 var deviceId = 'TwinTesting';
 
+// Sleep function to simulate delays
 function sleep(ms){
   return new Promise(resolve=>{
       setTimeout(resolve,ms)
   })
 }
 
+// Delete all desired properties
 var twinPatchReset = {
   properties: {
     desired: null
   }
 }
 
+// Set up some initial values
 var twinPatchInit = {
   properties: {
     desired: {
@@ -41,6 +45,7 @@ var twinPatchInit = {
   }
 };
 
+// Turn the fan on
 var twinPatchFanOn = {
   properties: {
     desired: {
@@ -50,6 +55,7 @@ var twinPatchFanOn = {
   }
 };
 
+// Set the maximum temperature for the climate component
 var twinPatchSetMaxTemperature = {
   properties: {
     desired: {
@@ -63,6 +69,7 @@ var twinPatchSetMaxTemperature = {
   }
 };
 
+// Add a new component
 var twinPatchAddWifiComponent = {
   properties: {
     desired: {
@@ -77,6 +84,7 @@ var twinPatchAddWifiComponent = {
   }
 };
 
+// Update the WiFi component
 var twinPatchUpdateWifiComponent = {
   properties: {
     desired: {
@@ -91,6 +99,7 @@ var twinPatchUpdateWifiComponent = {
   }
 };
 
+// Delete the WiFi component
 var twinPatchDeleteWifiComponent = {
   properties: {
     desired: {
@@ -102,8 +111,10 @@ var twinPatchDeleteWifiComponent = {
   }
 };
 
+// Create a device identity registry object
 var registry = Registry.fromConnectionString(connectionString);
 
+// Send a desired property update patch
 async function sendDesiredProperties(twin, patch) {
   twin.update(patch, (err, twin) => {
     if (err) {
@@ -115,6 +126,17 @@ async function sendDesiredProperties(twin, patch) {
   });
 }
 
+// Display the reported properties from the device
+function printReportedProperties(twin) {
+  console.log("Last received patch: " + twin.properties.reported.lastPatchReceivedId);
+  console.log("Firmware version: " + twin.properties.reported.firmwareVersion);
+  console.log("Fan status: " + twin.properties.reported.fanOn);
+  console.log("Min temperature set: " + twin.properties.reported.minTemperature);
+  console.log("Max temperature set: " + twin.properties.reported.maxTemperature);
+}
+
+// Get the device twin and send desired property update patches at intervals.
+// Print the reported properties after some of the desired property updates.
 registry.getTwin(deviceId, async (err, twin) => {
   if (err) {
     console.error(err.message);
@@ -122,7 +144,9 @@ registry.getTwin(deviceId, async (err, twin) => {
     console.log('Got device twin');
 
     sendDesiredProperties(twin,twinPatchReset);
-    await sleep(5000);
+    await sleep(20000);
+    console.log(chalk.blue('Initial reported properties from the device'));
+    printReportedProperties(twin);
     sendDesiredProperties(twin,twinPatchInit);
     await sleep(5000);
     sendDesiredProperties(twin,twinPatchFanOn);
@@ -134,7 +158,9 @@ registry.getTwin(deviceId, async (err, twin) => {
     sendDesiredProperties(twin,twinPatchUpdateWifiComponent);
     await sleep(5000);
     sendDesiredProperties(twin,twinPatchDeleteWifiComponent);
-    await sleep(5000);
-    sendDesiredProperties(twin,twinPatchReset);
+    await sleep(20000);
+    console.log(chalk.blue('\nFinal reported properties from the device'));
+    printReportedProperties(twin);
   }
 });
+
