@@ -12,6 +12,7 @@ var Protocol = require('azure-iot-device-mqtt').Mqtt;
 var connectionString = process.argv[2];
 // </createhubclient>
 
+// <reportedpatch>
 // Create a patch to send to the hub
 var reportedPropertiesPatch = {
   firmwareVersion:'1.2.1',
@@ -20,20 +21,24 @@ var reportedPropertiesPatch = {
   minTemperature:'',
   maxTemperature:''
 };
+// </reportedpatch>
 
 // Create the IoTHub client from the connection string
 var client = Client.fromConnectionString(connectionString, Protocol);
 
+// <gettwin>
 // Get the device twin
 client.getTwin(function(err, twin) {
   if (err) {
     console.error(chalk.red('Could not get device twin'));
   } else {
     console.log(chalk.green('Device twin created'));
-
+    // </gettwin>
+    // <allproperties>
     // Handle all desired property updates
     twin.on('properties.desired', function(delta) {
         console.log(chalk.yellow('\nNew desired properties received in patch:'));
+        // </allproperties>
         if (delta.patchId) {
           console.log(delta.patchId);
           reportedPropertiesPatch.lastPatchReceivedId = delta.patchId;
@@ -50,6 +55,7 @@ client.getTwin(function(err, twin) {
         }
     });
 
+    // <climatecomponent>
     // Handle desired properties updates to the climate component
     twin.on('properties.desired.components.climate', function(delta) {
         if (delta.minTemperature || delta.maxTemperature) {
@@ -63,7 +69,9 @@ client.getTwin(function(err, twin) {
           sendReportedProperties();
         }
     });
+    // </climatecomponent>
 
+    // <fanproperty>
     // Handle changes to the fanOn desired property
     twin.on('properties.desired.fanOn', function(fanOn) {
         console.log(chalk.green('\nSetting fan state to ' + fanOn));
@@ -71,8 +79,9 @@ client.getTwin(function(err, twin) {
         // Update the reported property after processing the desired property
         reportedPropertiesPatch.fanOn = fanOn ? fanOn : '{unknown}';
     });
+    // </fanproperty>
 
-
+    // <components>
     // Keep track of all the components the device knows about
     var componentList = {};
 
@@ -115,7 +124,9 @@ client.getTwin(function(err, twin) {
         });
       }
     });
+    // </components>
 
+    // <sendreportedproperties>
     // Send the reported properties patch to the hub
     function sendReportedProperties() {
       twin.properties.reported.update(reportedPropertiesPatch, function(err) {
@@ -124,6 +135,6 @@ client.getTwin(function(err, twin) {
         console.log(JSON.stringify(reportedPropertiesPatch, null, 2));
       });
     }
-
+    // </sendreportedproperties>
   }
 });

@@ -45,6 +45,7 @@ var twinPatchInit = {
   }
 };
 
+// <patches>
 // Turn the fan on
 var twinPatchFanOn = {
   properties: {
@@ -110,10 +111,9 @@ var twinPatchDeleteWifiComponent = {
     }
   }
 };
+// </patches>
 
-// Create a device identity registry object
-var registry = Registry.fromConnectionString(connectionString);
-
+// <senddesiredproperties>
 // Send a desired property update patch
 async function sendDesiredProperties(twin, patch) {
   twin.update(patch, (err, twin) => {
@@ -125,7 +125,9 @@ async function sendDesiredProperties(twin, patch) {
     }
   });
 }
+// </senddesiredproperties>
 
+// <displayreportedproperties>
 // Display the reported properties from the device
 function printReportedProperties(twin) {
   console.log("Last received patch: " + twin.properties.reported.lastPatchReceivedId);
@@ -134,6 +136,11 @@ function printReportedProperties(twin) {
   console.log("Min temperature set: " + twin.properties.reported.minTemperature);
   console.log("Max temperature set: " + twin.properties.reported.maxTemperature);
 }
+// </displayreportedproperties>
+
+// <getregistrytwin>
+// Create a device identity registry object
+var registry = Registry.fromConnectionString(connectionString);
 
 // Get the device twin and send desired property update patches at intervals.
 // Print the reported properties after some of the desired property updates.
@@ -142,6 +149,7 @@ registry.getTwin(deviceId, async (err, twin) => {
     console.error(err.message);
   } else {
     console.log('Got device twin');
+    // </getregistrytwin>
 
     sendDesiredProperties(twin,twinPatchReset);
     await sleep(20000);
