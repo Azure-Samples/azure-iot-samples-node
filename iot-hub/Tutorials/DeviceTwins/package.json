@@ -1,0 +1,25 @@
+{
+  "name": "simulated-device-twin-tutorial",
+  "version": "1.0.0",
+  "description": "Simulated device application in the IoT Hub device twin tutorial",
+  "main": "SimulatedDevice.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azure-Samples/azure-iot-samples-node.git"
+  },
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azure-Samples/azure-iot-samples-node/issues"
+  },
+  "homepage": "https://github.com/Azure-Samples/azure-iot-samples-node#readme",
+  "dependencies": {
+    "chalk": "2.4.1",
+    "azure-iot-device": "1.4.1",
+    "azure-iot-device-mqtt": "1.4.1",
+    "azure-iothub": "1.3.0"
+  }
+}
