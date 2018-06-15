@@ -19,6 +19,6 @@
   "dependencies": {
     "chalk": "2.4.1",
     "azure-iot-device": "1.4.1",
-    "azure-iot-device-mqtt": "1.4.1",
+    "azure-iot-device-mqtt": "1.4.1"
   }
 }

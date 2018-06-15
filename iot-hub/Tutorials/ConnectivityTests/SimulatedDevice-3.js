@@ -25,8 +25,15 @@ function printResultFor(op) {
   };
 }
 
-// Function to handle the TestMethod direct method call from IoT hub
-function onTestMethod(request, response) {
+// Connect to the IoT hub.
+client.open(function (err) {
+  if (err) {
+    console.log(chalk.red('Could not connect: ' + err));
+  } else {
+    console.log('Client connected');
+
+    // Listen for TestMethod being called from the hub
+    client.onDeviceMethod('TestMethod', function(request, response) {
   // Function to send a direct method reponse to your IoT hub.
   function directMethodResponse(err) {
     if(err) {
@@ -41,17 +48,7 @@ function onTestMethod(request, response) {
 
   // Report success back to your hub.
   response.send(200, 'TestMethod received: ' + JSON.stringify(request.payload), directMethodResponse);
-}
-
-// Callback function to run after connecting to the IoT hub.
-var connectCallback = function (err) {
-  if (err) {
-    console.log(chalk.red('Could not connect: ' + err));
-  } else {
-    console.log('Client connected');
-
-    // Listen for TestMethod being called from the hub
-    client.onDeviceMethod('TestMethod', onTestMethod);
+    });
 
     // Send reported properties to the hub
     client.getTwin(function(err, twin) {
@@ -93,7 +90,4 @@ var connectCallback = function (err) {
       client.sendEvent(message, printResultFor('Send telemetry'));
     }, 1000);
   }
-};
-
-// Connect to the IoT hub.
-client.open(connectCallback);
+});

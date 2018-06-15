@@ -18,16 +18,14 @@ console.log('IoT Hub troubleshooting tutorial\nSimulated device #1\n')
 // Disable retries so you see the connection error immediately
 client.setRetryPolicy(new NoRetry());
 
-// Callback function to run after connecting to the IoT hub.
-var connectCallback = function (err) {
+// Connect to the IoT hub.
+client.open(function (err) {
   if (err) {
     console.log('Could not connect: ' + err);
   } else {
     console.log('Client connected');
   }
-  client.close();
+  client.close(function() {
   process.exit(0);
-};
-
-// Connect to the IoT hub.
-client.open(connectCallback);
+  });
+});
