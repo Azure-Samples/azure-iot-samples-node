@@ -5,7 +5,6 @@
 
 var Client = require('azure-iot-device').Client;
 var Protocol = require('azure-iot-device-mqtt').Mqtt;
-var url = require('url');
 var async = require('async');
 const chalk = require('chalk');
 
@@ -17,154 +16,293 @@ if(process.argv.length < 3) {
 
 var connectionString = process.argv[2];
 var client = Client.fromConnectionString(connectionString, Protocol);
+var desiredFirmwareProperties = null;
+var fwUpdateInProgress = false;
+var deviceTwin = null;
+
+// <reportedProperties>
+// Firmware update patch
+//  currentFwVersion: The firmware version currently running on the device.
+//  pendingFwVersion: The next version to update to, should match what's
+//                    specified in the desired properties. Blank if there
+//                    is no pending update (fwUpdateStatus is 'current').
+//  fwUpdateStatus:   Defines the progress of the update so that it can be
+//                    categorized from a summary view. One of:
+//     - current:     There is no pending firmware update. currentFwVersion should
+//                    match fwVersion from desired properties.
+//     - downloading: Firmware update image is downloading.
+//     - verifying:   Verifying image file checksum and any other validations.
+//     - applying:    Update to the new image file is in progress.
+//     - rebooting:   Device is rebooting as part of update process.
+//     - error:       An error occurred during the update process. Additional details
+//                    should be specified in fwUpdateSubstatus.
+//     - rolledback:  Update rolled back to the previous version due to an error.
+//  fwUpdateSubstatus: Any additional detail for the fwUpdateStatus . May include
+//                     reasons for error or rollback states, or download %.
+//
+// var twinPatchFirmwareUpdate = {
+//   firmware: {
+//     currentFwVersion: '1.0.0',
+//     pendingFwVersion: '',
+//     fwUpdateStatus: 'current',
+//     fwUpdateSubstatus: '',
+//     lastFwUpdateStartTime: '',
+//     lastFwUpdateEndTime: ''
+//   }
+// };
+// </reportedProperties>
+
+// Send reported properties
+function sendReportedProperties(patch) {
+  deviceTwin.properties.reported.update(patch, function(err) {
+    if (err) {
+      console.error(chalk.red('Failed to update reported properties'));
+    }
+  });
+}
+
+// Send firmware update status to the hub
+function initializeStatus() {
+  var patch = {
+    firmware: {
+      currentFwVersion: '1.0.0',
+      pendingFwVersion: '',
+      fwUpdateStatus: 'current',
+      fwUpdateSubstatus: '',
+      lastFwUpdateStartTime: '',
+      lastFwUpdateEndTime: ''
+    }
+  };
+  sendReportedProperties(patch);
+}
+
+// <sendStatusUpdate>
+// Send firmware update status to the hub
+function sendStatusUpdate(status, substatus) {
+  var patch = {
+    firmware: {
+      fwUpdateStatus: status,
+      fwUpdateSubstatus: substatus
+    }
+  };
+  sendReportedProperties(patch);
+}
+// </sendStatusUpdate>
+
+// <sendUpdateStarting>
+// Send firmware update starting to the hub
+function sendStartingUpdate(pending) {
+  var patch = {
+    firmware: {
+      pendingFwVersion: pending,
+      fwUpdateStatus: 'current',
+      fwUpdateSubstatus: '',
+      lastFwUpdateStartTime: new Date().toISOString()
+    }
+  };
+  sendReportedProperties(patch);
+}
+// </sendUpdateStarting>
+
+// <sendUpdateFinished>
+// Send firmware update finished to the hub
+function sendFinishedUpdate(version) {
+  var patch = {
+    firmware: {
+      currentFwVersion: version,
+      pendingFwVersion: '',
+      fwUpdateStatus: 'current',
+      fwUpdateSubstatus: '',
+      lastFwUpdateEndTime: new Date().toISOString()
+    }
+  };
+  sendReportedProperties(patch);
+}
+// </sendUpdateFinished>
 
 client.open(function(err) {
   if (!err) {
-    // <handledirectmethod>
-    client.onDeviceMethod('firmwareUpdate', function(request, response) {
-      // Get the firmware image Uri from the body of the method request
-      var fwPackageUri = request.payload.fwPackageUri;
-      var fwPackageUriObj = url.parse(fwPackageUri);
-      
-      // Ensure that the url is to a secure url
-      if (fwPackageUriObj.protocol !== 'https:') {
-        response.send(400, 'Invalid URL format.  Must use https:// protocol.', function(err) {
-          if (err) console.error(chalk.red('Error sending direct method response :\n' + err.toString()));
-          else console.log(chalk.green('Response to direct method \'' + request.methodName + '\' sent successfully.'));
-        });
+    // Get the device twin
+    client.getTwin(function(err, twin) {
+      if (err) {
+        console.error(chalk.red('Could not get device twin'));
       } else {
-        // Respond the cloud app for the device method
-        response.send(200, 'Firmware update started.', function(err) {
-          if (err) console.error(chalk.red('Error sending direct method response :\n' + err.toString()));
-          else console.log(chalk.green('Response to direct method \'' + request.methodName + '\' sent successfully.'));
-        });
+        console.log(chalk.green('Got device twin'));
+        deviceTwin = twin;
+        initializeStatus();
+        
 
-        initiateFirmwareUpdateFlow(fwPackageUri, function(err){
-          if (!err) console.log("Completed firmwareUpdate flow")
-          else console.log("Error occured firmwareUpdate flow");
+        // <initiateUpdate>
+        // Handle firmware desired property updates - this triggers the firmware update flow
+        twin.on('properties.desired.firmware', function(fwUpdateDesiredProperties) {
+          console.log(chalk.green('\nCurrent firmware version: ' + twin.properties.reported.firmware.currentFwVersion));
+          console.log(chalk.green('Starting firmware update flow using this data:'));
+          console.log(JSON.stringify(fwUpdateDesiredProperties, null, 2));
+          desiredFirmwareProperties = twin.properties.desired.firmware;
+
+          if (fwUpdateDesiredProperties.fwVersion == twin.properties.reported.firmware.currentFwVersion) {
+            sendStatusUpdate('current', 'Firmware already up to date');
+            return;
+          }
+          if (fwUpdateInProgress) {
+            sendStatusUpdate('current', 'Firmware update already running');
+            return;
+          }
+          if (!fwUpdateDesiredProperties.fwPackageURI.startsWith('https')) {
+            sendStatusUpdate('error', 'Insecure package URI');
+            return;
+          }
+
+          fwUpdateInProgress = true;
+
+          sendStartingUpdate(fwUpdateDesiredProperties.fwVersion);
+          initiateFirmwareUpdateFlow(function(err, result) {
+            fwUpdateInProgress = false;
+            if (!err) {
+              console.log(chalk.green('Completed firmwareUpdate flow. New version: ' + result));
+              sendFinishedUpdate(result);
+            }
+           }, twin.properties.reported.firmware.currentFwVersion);
         });
+        // </initiateUpdate>
       }
     });
-    // </handledirectmethod>
-    console.log('Client connected to IoT Hub. Waiting for firmwareUpdate device method.');
+    console.log(chalk.green('Client connected to IoT Hub. Waiting for desired properties update.'));
   }
 });
 
 // <firmwareupdateflow>
 // Implementation of firmwareUpdate flow
-function initiateFirmwareUpdateFlow(fwPackageUri, callback) {
+function initiateFirmwareUpdateFlow(callback, currentVersion) {
+
   async.waterfall([
-    function (callback) {
-      downloadImage(fwPackageUri, callback);
-    },
-    applyImage
-  ], function(err) {
+    downloadImage,
+    verifyImage,
+    applyImage,
+    reboot
+  ], function(err, result) {
     if (err) {
-      console.error('Error : ' + err.message);
-    } 
-    callback(err);
+      console.error(chalk.red('Error occured firmwareUpdate flow : ' + err.message));
+      sendStatusUpdate('error', err.message);
+      setTimeout(function() {
+        console.log('Simulate rolling back update due to error');
+        sendStatusUpdate('rolledback', 'Rolled back to: ' + currentVersion);
+        callback(err, result);
+      }, 5000);
+    } else {
+      callback(null, result);
+    }
   });
 }
 // </firmwareupdateflow>
 
 // <downloadimagephase>
-// Function that implements the 'downloadImage' phase of the 
-// firmware update process.
-function downloadImage(fwPackageUriVal, callback) {
-  var imageResult = '[Fake firmware image data]';
-  
-  async.waterfall([
-    function (callback) {
-      reportFWUpdateThroughTwin ({ 
-        status: 'downloading',
-        startedDownloadingTime: new Date().toISOString()
-      }, 
-      callback);
-    },
-    function (callback) {
-      console.log("Downloading image from URI: " + fwPackageUriVal); 
+// Simulate downloading an image
+function downloadImage(callback) {
+  console.log('Simulating image download from: ' + desiredFirmwareProperties.fwPackageURI);
 
-      // Replace this line with the code to download the image.  Delay used to simulate the download.
-      setTimeout(function() { 
-        callback(null); 
-      }, 4000);
+  async.waterfall([
+    function(callback) {
+      sendStatusUpdate('downloading', 'Start downloading');
+      callback(null);
     },
-    function (callback) {
-      reportFWUpdateThroughTwin ({ 
-        status: 'download complete',
-        downloadCompleteTime : new Date().toISOString()
-      }, 
-      callback);
+    function(callback) {
+      // Simulate a delay downloading the image.
+      setTimeout(function() {
+        // Simulate some firmware image data
+        var imageData = '[Fake firmware image data]';
+        callback(null, imageData); 
+      }, 30000);
     },
-  ],
-  function(err) {
-    if (err) {
-      reportFWUpdateThroughTwin( { status : 'download image failed' }, function(err) {
-        if (err) {
-          callback(err); 
-        }  
-      })
+    function(imageData, callback) {
+      console.log('Downloaded image data: ' + imageData);
+      sendStatusUpdate('downloading', 'Finished downloading');
+      callback(null, imageData);
     }
-    callback(err, imageResult);
+  ], function (err, result) {
+    callback(err, result);
   });
 }
 // </downloadimagephase>
 
-// <applyimagephase>
-// Implementation for the apply phase, which reports status after 
-// completing the image apply.
-function applyImage(imageData, callback) {
+// <verifyimagephase>
+// Simulate verifying an image
+function verifyImage(imageData, callback) {
+  console.log('Simulating image verification using checksum: ' + desiredFirmwareProperties.fwPackageCheckValue);
+
   async.waterfall([
     function(callback) {
-      reportFWUpdateThroughTwin ({ 
-        status: 'applying',
-        startedApplyingImage: new Date().toISOString()
-      }, 
-      callback);
+      sendStatusUpdate('verifying', 'Start verifying download');
+      callback(null);
     },
-    function (callback) {
-      console.log("Applying firmware image"); 
-
-      // Replace this line with the code to download the image.  Delay used to simulate the download.
-      setTimeout(function() { 
+    function(callback) {
+      // Simulate verifying the image.
+      setTimeout(function() {
+        // Simulate verifying image data
         callback(null);
-      }, 4000);      
+        // Simulate an error verifying the image data
+        //callback(new Error('Image verification failed'));
+      }, 10000);
     },
-    function (callback) {
-      reportFWUpdateThroughTwin ({ 
-        status: 'apply firmware image complete',
-        lastFirmwareUpdate: new Date().toISOString()
-      }, 
-      callback);
-    },
-  ], 
-  function (err) {
-    if (err) {
-      reportFWUpdateThroughTwin({ status : 'apply image failed' }, function(err) {
-        if (err) {
-          callback(err); 
-        }
-      })
+    function(callback) {
+      sendStatusUpdate('verifying', 'Finished verifying download');
+      callback(null);
     }
+  ], function (err) {
+    callback(err, imageData);
+  });
+}
+// </verifyimagephase>
+
+// <applyimagephase>
+// Simulate applying an image
+function applyImage(imageData, callback) {
+  console.log('Simulating applying image');
+
+  async.waterfall([
+    function(callback) {
+      sendStatusUpdate('applying', 'Start applying image');
+      callback(null);
+    },
+    function(callback) {
+      // Simulate a delay applying the image.
+      setTimeout(function() {
+        callback(null, imageData); 
+      }, 30000);
+    },
+    function(imageData, callback) {
+      console.log('Applied image data: ' + imageData);
+      sendStatusUpdate('applying', 'Finished applying image');
+      callback(null);
+    }
+  ], function (err) {
     callback(err);
-  })
+  });
 }
 // </applyimagephase>
 
-// Helper function to update the twin reported properties.
-// Used by every phase of the firmware update.
-function reportFWUpdateThroughTwin(firmwareUpdateValue, callback) {
-  var patch = {
-    firmwareUpdate : firmwareUpdateValue
-  };
-  console.log(JSON.stringify(patch, null, 2));
-  client.getTwin(function(err, twin) {
-    if (!err) {
-      twin.properties.reported.update(patch, function(err) {
-        callback(err);
-      });      
-    } else {
-      callback(err);
+// <rebootphase>
+// Simulate rebooting the device
+function reboot(callback) {
+  console.log('Simulating reboot phase');
+
+  async.waterfall([
+    function(callback) {
+      sendStatusUpdate('rebooting', 'Start reboot');
+      callback(null);
+    },
+    function(callback) {
+      // Simulate a delay rebooting the device.
+      setTimeout(function() {
+        callback(null); 
+      }, 40000);
+    },
+    function(callback) {
+      sendStatusUpdate('rebooting', 'Finished reboot');
+      callback(null);
     }
+  ], function (err) {
+    callback(err, desiredFirmwareProperties.fwVersion);
   });
-};
+}
+// </rebootphase>

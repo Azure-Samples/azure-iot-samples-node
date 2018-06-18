@@ -1,7 +1,7 @@
 {
   "name": "firmware-update-tutorial",
   "version": "1.0.0",
-  "description": "Simulated device application in the IoT Hub firmware update tutorial",
+  "description": "Simulated device application and service client in the IoT Hub firmware update tutorial",
   "main": "SimulatedDevice.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,6 +18,8 @@
   "homepage": "https://github.com/Azure-Samples/azure-iot-samples-node#readme",
   "dependencies": {
     "chalk": "2.4.1",
+    "uuid": "3.2.1",
+    "async": "2.6.1",
     "azure-iot-device": "1.4.1",
     "azure-iot-device-mqtt": "1.4.1",
     "azure-iothub": "1.3.0"

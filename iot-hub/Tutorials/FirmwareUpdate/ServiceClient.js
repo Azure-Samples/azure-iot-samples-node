@@ -4,8 +4,8 @@
 'use strict';
 
 var Registry = require('azure-iothub').Registry;
-var Client = require('azure-iothub').Client;
-var async = require('async');
+var JobClient = require('azure-iothub').JobClient;
+var uuid = require('uuid');
 const chalk = require('chalk');
 
 // Receive the IoT Hub connection string as a command line parameter
@@ -15,68 +15,108 @@ if (process.argv.length < 3) {
 }
 
 var connectionString = process.argv[2];
+
+var fwVersion = '2.8.5';
+var fwPackageURI = 'https://secureuri/package.bin';
+var fwPackageCheckValue = '123456abcde';
+// <queryCondition>
+// Use a device twin tag to select the devices to update
+var queryCondition = "tags.devicetype = 'chiller'";
+// </queryCondition>
+var startTime = new Date();
+var maxExecutionTimeInSeconds =  300;
+
 var registry = Registry.fromConnectionString(connectionString);
-var client = Client.fromConnectionString(connectionString);
-var deviceToUpdate = 'MyFirmwareUpdateDevice';
+var jobClient = JobClient.fromConnectionString(connectionString);
 
-// <appflow>
-// First, initiate the firmware update process on the device using a device method.
-// Then, listen for status updates from the device.
-async.waterfall([
-  invokeFirmwareUpdate,
-  displayFirmwareUpdateStatus 
-],
-function(err) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log('Firmware update complete');
-  } 
-});
-// </appflow>
-
-// <initiateupdate>
-// Initiate the firmware update through a method
-function invokeFirmwareUpdate(callback) {
-  client.invokeDeviceMethod(deviceToUpdate, 
-    {
-      methodName: "firmwareUpdate",
-      payload: {
-        fwPackageUri: 'https://secureurl'
-      },
-      timeoutInSeconds: 30
-    }, function (err, result) {
-      console.log(chalk.green(JSON.stringify(result, null, 2)));
-      callback(err);
-    }
-  );
-}
-// </initiateupdate>
-
-// <reportstatus>
-// Get the twin and output the firmwareUpdate status from reported properties
-function displayFirmwareUpdateStatus(callback) {
-  var timer = setInterval(() => {
-    registry.getTwin(deviceToUpdate, function(err, twin){
+// <monitorJob>
+// Monitor the device twin update job
+function monitorJob (jobId, callback) {
+  var jobMonitorInterval = setInterval(function() {
+    jobClient.getJob(jobId, function(err, result) {
       if (err) {
-        clearInterval(timer);
-        callback(err);
+        console.error(chalk.red('Job: Could not get status: ' + err.message));
       } else {
-        // Output the value of the device twin reported properties, which includes the firmwareUpdate details
-        if (twin.properties.reported.firmwareUpdate) {
-          console.log(JSON.stringify(twin.properties.reported.firmwareUpdate, null, 2));
-          if (twin.properties.reported.firmwareUpdate.status == 'apply firmware image complete') {
-            clearInterval(timer);
-            callback(null);
-          }
-          if (twin.properties.reported.firmwareUpdate.status == 'apply image failed' ||
-              twin.properties.reported.firmwareUpdate.status == 'download image failed') {
-            clearInterval(timer);
-            callback(twin.properties.reported.firmwareUpdate.status);
-          }
+        console.log(chalk.green('Job: ' + jobId + ' - status: ' + result.status));
+        if (result.status === 'completed' || result.status === 'failed' || result.status === 'cancelled') {
+          clearInterval(jobMonitorInterval);
+          callback(null, result);
         }
       }
     });
-  }, 1000);
+  }, 5000);
 }
-// </reportstatus>
+// </monitorJob>
+
+// <firmwarePatch>
+// Firmware update patch
+//   fwVersion: desired firmware version 
+//   fwPackageURI: download location of firmware package
+//   fwPackageCheckValue: a checksum or other value to verify the integrity of the firmware package
+var twinPatchFirmwareUpdate = {
+  etag: '*', 
+  properties: {
+    desired: {
+      patchId: "Firmware update",
+      firmware: {
+        fwVersion: fwVersion,
+        fwPackageURI: fwPackageURI,
+        fwPackageCheckValue: fwPackageCheckValue
+      }
+    }
+  }
+};
+// </firmwarePatch>
+
+// <scheduleJob>
+var twinJobId = uuid.v4();
+
+console.log(chalk.green('Job: Scheduling twin update job id: ' + twinJobId));
+jobClient.scheduleTwinUpdate(twinJobId,
+                            queryCondition,
+                            twinPatchFirmwareUpdate,
+                            startTime,
+                            maxExecutionTimeInSeconds,
+                            function(err) {
+  if (err) {
+    console.error(chalk.red('Job: Could not schedule twin update: ' + err.message));
+  } else {
+    monitorJob(twinJobId, function(err, result) {
+      if (err) {
+        console.error(chalk.red('Job: Could not monitor twin update: ' + err.message));
+      } else {
+        console.log(chalk.green('Job: submitted:'));
+        console.log(chalk.green(JSON.stringify(result, null, 2)));
+      }
+    });
+    queryFirmwareUpdateStatus( function (err){
+      if (err) console.log(chalk.red('Query: ' + err.message));
+    });
+  }
+});
+// </scheduleJob>
+
+// <queryTwins>
+// Query the device twins and output the reported properties every 5 seconds
+function queryFirmwareUpdateStatus(callback) {
+  var timer = setInterval(() => {
+    var query = registry.createQuery('SELECT * FROM devices WHERE ' + queryCondition, 100);
+    var onResults = function(err, results) {
+      if (err) {
+        console.error(chalk.red('Query: Failed to fetch the results: ' + err.message));
+      } else {
+        // Do something with the results
+        results.forEach(function(twin) {
+          console.log('\nQuery: Reported properties for: ' + twin.deviceId);
+          console.log(twin.properties.reported.firmware);
+        });
+        if (query.hasMoreResults) {
+          query.nextAsTwin(onResults);
+        }
+      }
+    };
+
+    query.nextAsTwin(onResults);
+  }, 5000);
+}
+// </queryTwins>
