@@ -1,9 +1,9 @@
 'use strict';
 
-// The device connection string to authenticate the device with your IoT hub.
+// Pass in the device connection string to authenticate the device with your IoT hub.
 // Using the Azure CLI:
 // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyTestDevice --output table
-var connectionString = '{your device connection string}';
+var connectionString = process.argv[2];
 
 // Using the Node.js Device SDK for IoT Hub:
 //   https://github.com/Azure/azure-iot-sdk-node
@@ -26,6 +26,6 @@ client.open(function (err) {
     console.log('Client connected');
   }
   client.close(function() {
-  process.exit(0);
+    process.exit(0);
   });
 });
