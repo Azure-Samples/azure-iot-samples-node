@@ -1,9 +1,9 @@
 'use strict';
 
-// The device connection string to authenticate the device with your IoT hub.
+// Pass in the device connection string to authenticate the device with your IoT hub.
 // Using the Azure CLI:
 // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyTestDevice --output table
-var connectionString = '{your device connection string}';
+var connectionString = process.argv[2];
 
 // Using the Node.js Device SDK for IoT Hub:
 //   https://github.com/Azure/azure-iot-sdk-node
@@ -25,33 +25,28 @@ function printResultFor(op) {
   };
 }
 
-// Function to handle the TestMethod direct method call from IoT hub
-function onTestMethod(request, response) {
-  // Function to send a direct method reponse to your IoT hub.
-  function directMethodResponse(err) {
-    if(err) {
-      console.error(chalk.red('An error ocurred when sending a method response:\n' + err.toString()));
-    } else {
-        console.log(chalk.green('Response to method \'' + request.methodName + '\' sent successfully.' ));
-    }
-  }
-
-  console.log(chalk.green('Direct method payload received:'));
-  console.log(chalk.green(JSON.stringify(request.payload)));
-
-  // Report success back to your hub.
-  response.send(200, 'TestMethod received: ' + JSON.stringify(request.payload), directMethodResponse);
-}
-
-// Callback function to run after connecting to the IoT hub.
-var connectCallback = function (err) {
+// Connect to the IoT hub.
+client.open(function (err) {
   if (err) {
     console.log(chalk.red('Could not connect: ' + err));
   } else {
     console.log('Client connected');
 
     // Listen for TestMethod being called from the hub
-    client.onDeviceMethod('TestMethod', onTestMethod);
+    client.onDeviceMethod('TestMethod', function(request, response) {
+
+      console.log(chalk.green('Direct method payload received:'));
+      console.log(chalk.green(JSON.stringify(request.payload)));
+
+      // Report success back to your hub.
+      response.send(200, 'TestMethod received: ' + JSON.stringify(request.payload), function (err) {
+        if(err) {
+          console.error(chalk.red('An error ocurred when sending a method response:\n' + err.toString()));
+        } else {
+          console.log(chalk.green('Response to method \'' + request.methodName + '\' sent successfully.' ));
+        }
+      });
+    });
 
     // Send reported properties to the hub
     client.getTwin(function(err, twin) {
@@ -93,7 +88,4 @@ var connectCallback = function (err) {
       client.sendEvent(message, printResultFor('Send telemetry'));
     }, 1000);
   }
-};
-
-// Connect to the IoT hub.
-client.open(connectCallback);
+});

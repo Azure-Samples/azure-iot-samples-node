@@ -1,9 +1,9 @@
 'use strict';
 
-// The device connection string to authenticate the device with your IoT hub.
+// Pass in the device connection string to authenticate the device with your IoT hub.
 // Using the Azure CLI:
 // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyTestDevice --output table
-var connectionString = '{your device connection string}';
+var connectionString = process.argv[2];
 
 // Using the Node.js Device SDK for IoT Hub:
 //   https://github.com/Azure/azure-iot-sdk-node
@@ -18,16 +18,14 @@ console.log('IoT Hub troubleshooting tutorial\nSimulated device #1\n')
 // Disable retries so you see the connection error immediately
 client.setRetryPolicy(new NoRetry());
 
-// Callback function to run after connecting to the IoT hub.
-var connectCallback = function (err) {
+// Connect to the IoT hub.
+client.open(function (err) {
   if (err) {
     console.log('Could not connect: ' + err);
   } else {
     console.log('Client connected');
   }
-  client.close();
-  process.exit(0);
-};
-
-// Connect to the IoT hub.
-client.open(connectCallback);
+  client.close(function() {
+    process.exit(0);
+  });
+});
