@@ -1,0 +1,18 @@
+{
+  "fanOn": "true",
+  "components": {
+    "system": {
+      "id": "17",
+      "units": "farenheit",
+      "firmwareVersion": "9.75"
+    },
+    "wifi" : { 
+      "channel" : "6",
+      "ssid": "my_network"
+    },
+    "climate" : {
+      "minTemperature": "68",
+      "maxTemperature": "76"
+    }
+  }
+}
