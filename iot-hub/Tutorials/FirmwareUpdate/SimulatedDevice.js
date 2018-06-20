@@ -52,17 +52,8 @@ var deviceTwin = null;
 // };
 // </reportedProperties>
 
-// Send reported properties
-function sendReportedProperties(patch) {
-  deviceTwin.properties.reported.update(patch, function(err) {
-    if (err) {
-      console.error(chalk.red('Failed to update reported properties'));
-    }
-  });
-}
-
 // Send firmware update status to the hub
-function initializeStatus() {
+function initializeStatus(callback) {
   var patch = {
     firmware: {
       currentFwVersion: '1.0.0',
@@ -73,25 +64,29 @@ function initializeStatus() {
       lastFwUpdateEndTime: ''
     }
   };
-  sendReportedProperties(patch);
+  deviceTwin.properties.reported.update(patch, function(err) {
+    callback(err);
+  });
 }
 
 // <sendStatusUpdate>
 // Send firmware update status to the hub
-function sendStatusUpdate(status, substatus) {
+function sendStatusUpdate(status, substatus, callback) {
   var patch = {
     firmware: {
       fwUpdateStatus: status,
       fwUpdateSubstatus: substatus
     }
   };
-  sendReportedProperties(patch);
+  deviceTwin.properties.reported.update(patch, function(err) {
+    callback(err);
+  });
 }
 // </sendStatusUpdate>
 
 // <sendUpdateStarting>
 // Send firmware update starting to the hub
-function sendStartingUpdate(pending) {
+function sendStartingUpdate(pending, callback) {
   var patch = {
     firmware: {
       pendingFwVersion: pending,
@@ -100,13 +95,15 @@ function sendStartingUpdate(pending) {
       lastFwUpdateStartTime: new Date().toISOString()
     }
   };
-  sendReportedProperties(patch);
+  deviceTwin.properties.reported.update(patch, function(err) {
+    callback(err);
+  });
 }
 // </sendUpdateStarting>
 
 // <sendUpdateFinished>
 // Send firmware update finished to the hub
-function sendFinishedUpdate(version) {
+function sendFinishedUpdate(version, callback) {
   var patch = {
     firmware: {
       currentFwVersion: version,
@@ -116,7 +113,9 @@ function sendFinishedUpdate(version) {
       lastFwUpdateEndTime: new Date().toISOString()
     }
   };
-  sendReportedProperties(patch);
+  deviceTwin.properties.reported.update(patch, function(err) {
+    callback(err);
+  });
 }
 // </sendUpdateFinished>
 
@@ -129,7 +128,12 @@ client.open(function(err) {
       } else {
         console.log(chalk.green('Got device twin'));
         deviceTwin = twin;
-        initializeStatus();
+        initializeStatus(function (err) {
+          if (err) {
+            console.error(chalk.red('Error initializing twin: ' + err.message));
+          }
+          return;
+        });
         
 
         // <initiateUpdate>
@@ -141,28 +145,50 @@ client.open(function(err) {
           desiredFirmwareProperties = twin.properties.desired.firmware;
 
           if (fwUpdateDesiredProperties.fwVersion == twin.properties.reported.firmware.currentFwVersion) {
-            sendStatusUpdate('current', 'Firmware already up to date');
-            return;
+            sendStatusUpdate('current', 'Firmware already up to date', function (err) {
+              if (err) {
+                console.error(chalk.red('Error occured sending status update : ' + err.message));
+              }
+              return;
+            });
           }
           if (fwUpdateInProgress) {
-            sendStatusUpdate('current', 'Firmware update already running');
-            return;
+            sendStatusUpdate('current', 'Firmware update already running', function (err) {
+              if (err) {
+                console.error(chalk.red('Error occured sending status update : ' + err.message));
+              }
+              return;
+            });
           }
           if (!fwUpdateDesiredProperties.fwPackageURI.startsWith('https')) {
-            sendStatusUpdate('error', 'Insecure package URI');
-            return;
+            sendStatusUpdate('error', 'Insecure package URI', function (err) {
+              if (err) {
+                console.error(chalk.red('Error occured sending status update : ' + err.message));
+              }
+              return;
+            });
           }
 
           fwUpdateInProgress = true;
 
-          sendStartingUpdate(fwUpdateDesiredProperties.fwVersion);
+          sendStartingUpdate(fwUpdateDesiredProperties.fwVersion, function (err) {
+            if (err) {
+              console.error(chalk.red('Error occured sending starting update : ' + err.message));
+            }
+            return;
+          });
           initiateFirmwareUpdateFlow(function(err, result) {
             fwUpdateInProgress = false;
             if (!err) {
               console.log(chalk.green('Completed firmwareUpdate flow. New version: ' + result));
-              sendFinishedUpdate(result);
+              sendFinishedUpdate(result, function (err) {
+                if (err) {
+                  console.error(chalk.red('Error occured sending finished update : ' + err.message));
+                }
+                return;
+              });
             }
-           }, twin.properties.reported.firmware.currentFwVersion);
+          }, twin.properties.reported.firmware.currentFwVersion);
         });
         // </initiateUpdate>
       }
@@ -183,10 +209,18 @@ function initiateFirmwareUpdateFlow(callback, currentVersion) {
   ], function(err, result) {
     if (err) {
       console.error(chalk.red('Error occured firmwareUpdate flow : ' + err.message));
-      sendStatusUpdate('error', err.message);
+      sendStatusUpdate('error', err.message, function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       setTimeout(function() {
         console.log('Simulate rolling back update due to error');
-        sendStatusUpdate('rolledback', 'Rolled back to: ' + currentVersion);
+        sendStatusUpdate('rolledback', 'Rolled back to: ' + currentVersion, function (err) {
+          if (err) {
+            console.error(chalk.red('Error occured sending status update : ' + err.message));
+          }
+        });
         callback(err, result);
       }, 5000);
     } else {
@@ -203,7 +237,11 @@ function downloadImage(callback) {
 
   async.waterfall([
     function(callback) {
-      sendStatusUpdate('downloading', 'Start downloading');
+      sendStatusUpdate('downloading', 'Start downloading', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null);
     },
     function(callback) {
@@ -216,7 +254,11 @@ function downloadImage(callback) {
     },
     function(imageData, callback) {
       console.log('Downloaded image data: ' + imageData);
-      sendStatusUpdate('downloading', 'Finished downloading');
+      sendStatusUpdate('downloading', 'Finished downloading', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null, imageData);
     }
   ], function (err, result) {
@@ -232,7 +274,11 @@ function verifyImage(imageData, callback) {
 
   async.waterfall([
     function(callback) {
-      sendStatusUpdate('verifying', 'Start verifying download');
+      sendStatusUpdate('verifying', 'Start verifying download', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null);
     },
     function(callback) {
@@ -245,7 +291,11 @@ function verifyImage(imageData, callback) {
       }, 10000);
     },
     function(callback) {
-      sendStatusUpdate('verifying', 'Finished verifying download');
+      sendStatusUpdate('verifying', 'Finished verifying download', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null);
     }
   ], function (err) {
@@ -261,7 +311,11 @@ function applyImage(imageData, callback) {
 
   async.waterfall([
     function(callback) {
-      sendStatusUpdate('applying', 'Start applying image');
+      sendStatusUpdate('applying', 'Start applying image', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null);
     },
     function(callback) {
@@ -272,7 +326,11 @@ function applyImage(imageData, callback) {
     },
     function(imageData, callback) {
       console.log('Applied image data: ' + imageData);
-      sendStatusUpdate('applying', 'Finished applying image');
+      sendStatusUpdate('applying', 'Finished applying image', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null);
     }
   ], function (err) {
@@ -288,7 +346,11 @@ function reboot(callback) {
 
   async.waterfall([
     function(callback) {
-      sendStatusUpdate('rebooting', 'Start reboot');
+      sendStatusUpdate('rebooting', 'Start reboot', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null);
     },
     function(callback) {
@@ -298,7 +360,11 @@ function reboot(callback) {
       }, 40000);
     },
     function(callback) {
-      sendStatusUpdate('rebooting', 'Finished reboot');
+      sendStatusUpdate('rebooting', 'Finished reboot', function (err) {
+        if (err) {
+          console.error(chalk.red('Error occured sending status update : ' + err.message));
+        }
+      });
       callback(null);
     }
   ], function (err) {

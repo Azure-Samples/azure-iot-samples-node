@@ -4,9 +4,15 @@
 'use strict';
 
 var Registry = require('azure-iothub').Registry;
-var JobClient = require('azure-iothub').JobClient;
-var uuid = require('uuid');
+//var JobClient = require('azure-iothub').JobClient;
+//var uuid = require('uuid');
 const chalk = require('chalk');
+
+var connectionString = process.argv[2];
+var fwVersion = '2.8.5';
+var fwPackageURI = 'https://secureuri/package.bin';
+var fwPackageCheckValue = '123456abcde';
+var sampleConfigId = 'firmware285';
 
 // Receive the IoT Hub connection string as a command line parameter
 if (process.argv.length < 3) {
@@ -14,109 +20,75 @@ if (process.argv.length < 3) {
   process.exit(1);
 }
 
-var connectionString = process.argv[2];
-
-var fwVersion = '2.8.5';
-var fwPackageURI = 'https://secureuri/package.bin';
-var fwPackageCheckValue = '123456abcde';
-// <queryCondition>
-// Use a device twin tag to select the devices to update
-var queryCondition = "tags.devicetype = 'chiller'";
-// </queryCondition>
-var startTime = new Date();
-var maxExecutionTimeInSeconds =  300;
-
 var registry = Registry.fromConnectionString(connectionString);
-var jobClient = JobClient.fromConnectionString(connectionString);
 
-// <monitorJob>
-// Monitor the device twin update job
-function monitorJob (jobId, callback) {
-  var jobMonitorInterval = setInterval(function() {
-    jobClient.getJob(jobId, function(err, result) {
-      if (err) {
-        console.error(chalk.red('Job: Could not get status: ' + err.message));
-      } else {
-        console.log(chalk.green('Job: ' + jobId + ' - status: ' + result.status));
-        if (result.status === 'completed' || result.status === 'failed' || result.status === 'cancelled') {
-          clearInterval(jobMonitorInterval);
-          callback(null, result);
-        }
-      }
-    });
-  }, 5000);
-}
-// </monitorJob>
-
-// <firmwarePatch>
-// Firmware update patch
-//   fwVersion: desired firmware version 
-//   fwPackageURI: download location of firmware package
-//   fwPackageCheckValue: a checksum or other value to verify the integrity of the firmware package
-var twinPatchFirmwareUpdate = {
-  etag: '*', 
-  properties: {
-    desired: {
-      patchId: "Firmware update",
-      firmware: {
+// <configuration>
+var firmwareConfig = {
+  id: sampleConfigId,
+  content: {
+    deviceContent: {
+      'properties.desired.firmware': {
         fwVersion: fwVersion,
         fwPackageURI: fwPackageURI,
         fwPackageCheckValue: fwPackageCheckValue
       }
     }
-  }
+  },
+
+  // Maximum of 5 metrics per configuration
+  metrics: {
+    queries: {
+      current: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'current\'',
+      applying: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND ( properties.reported.firmware.fwUpdateStatus=\'downloading\' OR properties.reported.firmware.fwUpdateStatus=\'verifying\' OR properties.reported.firmware.fwUpdateStatus=\'applying\')',
+      rebooting: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'rebooting\'',
+      error: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'error\'',
+      rolledback: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'rolledback\''
+    }
+  },
+
+  // Specify the devices the firmware update applies to
+  targetCondition: 'tags.devicetype = \'chiller\'',
+  priority: 20
 };
-// </firmwarePatch>
+// </configuration>
 
-// <scheduleJob>
-var twinJobId = uuid.v4();
+// <createConfiguration>
+var createConfiguration = function(done) {
+  console.log();
+  console.log('Add new configuration with id ' + firmwareConfig.id + ' and priority ' + firmwareConfig.priority);
 
-console.log(chalk.green('Job: Scheduling twin update job id: ' + twinJobId));
-jobClient.scheduleTwinUpdate(twinJobId,
-                            queryCondition,
-                            twinPatchFirmwareUpdate,
-                            startTime,
-                            maxExecutionTimeInSeconds,
-                            function(err) {
-  if (err) {
-    console.error(chalk.red('Job: Could not schedule twin update: ' + err.message));
-  } else {
-    monitorJob(twinJobId, function(err, result) {
+  registry.addConfiguration(firmwareConfig, function(err) {
+    if (err) {
+      console.log('Add configuration failed: ' + err);
+      done();
+    } else {
+      console.log('Add configuration succeeded');
+      done();
+    }
+  });
+};
+// </createConfiguration>
+
+// <monitorConfiguration>
+var monitorConfiguration = function(done) {
+  console.log('Monitor metrics for configuration: ' + sampleConfigId);
+  setInterval(function(){
+    registry.getConfiguration(sampleConfigId, function(err, config) {
       if (err) {
-        console.error(chalk.red('Job: Could not monitor twin update: ' + err.message));
+        console.log('getConfiguration failed: ' + err);
       } else {
-        console.log(chalk.green('Job: submitted:'));
-        console.log(chalk.green(JSON.stringify(result, null, 2)));
+        console.log('System metrics:');
+        console.log(JSON.stringify(config.systemMetrics.results, null, '  '));
+        console.log('Custom metrics:');
+        console.log(JSON.stringify(config.metrics.results, null, '  '));
       }
     });
-    queryFirmwareUpdateStatus( function (err){
-      if (err) console.log(chalk.red('Query: ' + err.message));
-    });
-  }
+  }, 20000);
+  done();
+};
+// </monitorConfiguration>
+
+createConfiguration(function() {
+  monitorConfiguration(function() {
+  });
 });
-// </scheduleJob>
-
-// <queryTwins>
-// Query the device twins and output the reported properties every 5 seconds
-function queryFirmwareUpdateStatus(callback) {
-  var timer = setInterval(() => {
-    var query = registry.createQuery('SELECT * FROM devices WHERE ' + queryCondition, 100);
-    var onResults = function(err, results) {
-      if (err) {
-        console.error(chalk.red('Query: Failed to fetch the results: ' + err.message));
-      } else {
-        // Do something with the results
-        results.forEach(function(twin) {
-          console.log('\nQuery: Reported properties for: ' + twin.deviceId);
-          console.log(twin.properties.reported.firmware);
-        });
-        if (query.hasMoreResults) {
-          query.nextAsTwin(onResults);
-        }
-      }
-    };
-
-    query.nextAsTwin(onResults);
-  }, 5000);
-}
-// </queryTwins>
