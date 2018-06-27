@@ -1,0 +1,25 @@
+{
+  "name": "azure-iot-provisioning-service-samples",
+  "version": "0.0.1",
+  "description": "Azure IoT SDK - Provisioning Service Client samples",
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "dependencies": {
+    "yargs": "^10.1.1",
+    "azure-iot-provisioning-service": "1.2.0-modules-preview.2"
+  },
+  "scripts": {
+    "build": "echo nothing to do"
+  },
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azure/azure-iot-sdk-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Azure/azure-iot-sdk-node/issues"
+  },
+  "homepage": "https://github.com/Azure/azure-iot-sdk-node#readme"
+}
