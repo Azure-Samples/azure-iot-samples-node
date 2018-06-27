@@ -1,0 +1,29 @@
+{
+  "name": "azure-iot-provisioning-device-samples",
+  "version": "0.0.1",
+  "description": "Azure IoT SDK - Provisioning Device Client samples",
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "dependencies": {
+    "azure-iot-provisioning-device": "^1.3.0",
+    "azure-iot-provisioning-device-amqp": "^1.3.0",
+    "azure-iot-provisioning-device-http": "^1.3.0",
+    "azure-iot-provisioning-device-mqtt": "^1.3.0",
+    "azure-iot-security-x509": "^1.2.0",
+    "azure-iot-security-tpm": "^1.2.0"
+  },
+  "scripts": {
+    "build": "echo nothing to do"
+  },
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azure/azure-iot-sdk-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Azure/azure-iot-sdk-node/issues"
+  },
+  "homepage": "https://github.com/Azure/azure-iot-sdk-node#readme"
+}
