@@ -20,8 +20,8 @@
     "chalk": "2.4.1",
     "uuid": "3.2.1",
     "async": "2.6.1",
-    "azure-iot-device": "1.4.3",
-    "azure-iot-device-mqtt": "1.4.3",
-    "azure-iothub": "1.7.0-modules-preview.2"
+    "azure-iot-device": "^1.7.1",
+    "azure-iot-device-mqtt": "^1.7.1",
+    "azure-iothub": "^1.7.1"
   }
 }
