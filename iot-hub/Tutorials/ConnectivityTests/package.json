@@ -18,7 +18,7 @@
   "homepage": "https://github.com/Azure-Samples/azure-iot-samples-node#readme",
   "dependencies": {
     "chalk": "2.4.1",
-    "azure-iot-device": "1.4.1",
-    "azure-iot-device-mqtt": "1.4.1"
+    "azure-iot-device": "^1.7.1",
+    "azure-iot-device-mqtt": "^1.7.1"
   }
 }
