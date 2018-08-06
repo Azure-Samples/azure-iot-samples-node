@@ -30,14 +30,6 @@ var client = DeviceClient.fromConnectionString(connectionString, Mqtt);
 // Timeout created by setInterval
 var intervalLoop = null;
 
-// Print results.
-function printResultFor(op) {
-  return function printResult(err, res) {
-    if (err) console.log(op + ' error: ' + err.toString());
-    if (res) console.log(op + ' status: ' + res.constructor.name);
-  };
-}
-
 // Function to handle the SetTelemetryInterval direct method call from IoT hub
 function onSetTelemetryInterval(request, response) {
   // Function to send a direct method reponse to your IoT hub.
@@ -63,7 +55,7 @@ function onSetTelemetryInterval(request, response) {
     // Reset the interval timer
     clearInterval(intervalLoop);
     intervalLoop = setInterval(sendMessage, request.payload * 1000);
-    
+
     // Report success back to your hub.
     response.send(200, 'Telemetry interval set: ' + request.payload, directMethodResponse);
   }
@@ -73,19 +65,25 @@ function onSetTelemetryInterval(request, response) {
 function sendMessage(){
   // Simulate telemetry.
   var temperature = 20 + (Math.random() * 15);
-  var humidity = 60 + (Math.random() * 20);
-
-  // Add the telemetry to the message body.
-  var data = JSON.stringify({ temperature: temperature, humidity: humidity });
-  var message = new Message(data);
+  var message = new Message(JSON.stringify({
+    temperature: temperature,
+    humidity: 60 + (Math.random() * 20)
+  }));
 
   // Add a custom application property to the message.
   // An IoT hub can filter on these properties without access to the message body.
   message.properties.add('temperatureAlert', (temperature > 30) ? 'true' : 'false');
+
   console.log('Sending message: ' + message.getData());
 
   // Send the message.
-  client.sendEvent(message, printResultFor('send'));
+  client.sendEvent(message, function (err) {
+    if (err) {
+      console.error('send error: ' + err.toString());
+    } else {
+      console.log('message sent');
+    }
+  });
 }
 
 // Set up the handler for the SetTelemetryInterval direct method call.
