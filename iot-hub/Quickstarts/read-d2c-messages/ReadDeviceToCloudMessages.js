@@ -20,7 +20,7 @@ var connectionString = '{Your service connection string here}';
 //   https://github.com/Azure/azure-event-hubs-node
 // The sample connects to an IoT hub's Event Hubs-compatible endpoint
 // to read messages sent from a device.
-var { EventHubClient, EventPosition } = require('azure-event-hubs');
+var { EventHubClient, EventPosition } = require('@azure/event-hubs');
 
 var printError = function (err) {
   console.log(err.message);
