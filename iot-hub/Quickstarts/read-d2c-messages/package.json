@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Azure-Samples/azure-iot-samples-node#readme",
   "dependencies": {
-    "@azure/event-hubs": "^1.0.3"
+    "@azure/event-hubs": "^1.0.3",
+    "request": "2.88.0"
   }
 }
