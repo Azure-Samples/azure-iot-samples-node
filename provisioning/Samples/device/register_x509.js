@@ -33,7 +33,8 @@ if (!idScope) {
 }
 
 //
-// You can find your idScope in the portal overview section for your dps instance.
+// REGISTRATION_ID is the device id which was used for certificate generation.
+// This id will be shown at the device enrollment registration records
 //
 var registrationId = process.env.REGISTRATION_ID;
 if (!registrationId) {
