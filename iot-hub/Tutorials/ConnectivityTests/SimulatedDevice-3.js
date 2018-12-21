@@ -82,6 +82,16 @@ client.open(function (err) {
       var data = JSON.stringify({ temperature: temperature, humidity: humidity });
       var message = new Message(data);
 
+      // Add the level
+      var level = Math.random();
+      if(level >= 0.7){
+
+      }else if(level >= 0.3){
+
+      }else {
+
+      }
+      
       console.log('Sending message: ' + message.getData());
 
       // Send the message.
