@@ -84,12 +84,12 @@ client.open(function (err) {
 
       // Add the level
       var level = Math.random();
-      if(level >= 0.7){
-        message.properties.level="critical"
-      }else if(level >= 0.3){
-        message.properties.level="normal"
-      }else {
-        message.properties.level="storage"
+      if (level >= 0.7) {
+        message.properties.add('level', 'critical');
+      } else if (level >= 0.3) {
+        message.properties.add('level', 'normal');
+      } else {
+        message.properties.add('level', 'storage');
       }
       
       console.log('Sending message: ' + message.getData());
