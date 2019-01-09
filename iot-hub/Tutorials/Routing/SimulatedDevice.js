@@ -14,6 +14,7 @@ var Message = require('azure-iot-device').Message;
 var NoRetry = require('azure-iot-common').NoRetry;
 var client = Client.fromConnectionString(connectionString, Protocol);
 const chalk = require('chalk');
+const myDeviceId = 'Contoso-Test-Device';
 
 console.log('IoT Hub troubleshooting tutorial\nSimulated device #3\n')
 
@@ -32,65 +33,33 @@ client.open(function (err) {
   } else {
     console.log('Client connected');
 
-    // Listen for TestMethod being called from the hub
-    client.onDeviceMethod('TestMethod', function(request, response) {
-
-      console.log(chalk.green('Direct method payload received:'));
-      console.log(chalk.green(JSON.stringify(request.payload)));
-
-      // Report success back to your hub.
-      response.send(200, 'TestMethod received: ' + JSON.stringify(request.payload), function (err) {
-        if(err) {
-          console.error(chalk.red('An error ocurred when sending a method response:\n' + err.toString()));
-        } else {
-          console.log(chalk.green('Response to method \'' + request.methodName + '\' sent successfully.' ));
-        }
-      });
-    });
-
-    // Send reported properties to the hub
-    client.getTwin(function(err, twin) {
-      if (err) {
-        console.error(chalk.red('Could not get twin'));
-      } else {
-        var timestamp = new Date();
-        var patch = {
-          devicelaststarted: timestamp
-        };
-
-        twin.properties.reported.update(patch, function(err) {
-          if (err) {
-            console.error(chalk.red('Could not update twin'));
-          } else {
-            console.log(chalk.green('Twin: Sent reported properties'));
-          }
-        });
-
-        twin.on('properties.desired', function(desiredChange) {
-          console.log(chalk.green('Twin: Received desired properties:\n' + JSON.stringify(desiredChange)));
-        });
-      }
-    });
-
     // Create a message and send it to the IoT hub every second
     setInterval(function(){
       // Simulate telemetry.
       var temperature = 20 + (Math.random() * 15);
       var humidity = 60 + (Math.random() * 20);
+      var levelValue;
+      var infoString;
+
+      if (Math.random() > 0.7) {
+        if( Math.random() > 0.5 ) {
+          levelValue = 'critical';
+          infoString = 'This is a critical message.';
+        }else{
+          levelValue = 'storage';
+          infoString = 'This is a storage message.';
+        }
+      } else {
+        levelValue = 'normal';
+        infoString = 'This is a normal message.';
+      }
 
       // Add the telemetry to the message body.
-      var data = JSON.stringify({ temperature: temperature, humidity: humidity });
+      var data = JSON.stringify({ deviceId: myDeviceId, temperature: temperature, humidity: humidity, pointInfo: infoString });
       var message = new Message(data);
 
       // Add the level for routing
-      var level = Math.random();
-      if (level >= 0.7) {
-        message.properties.add('level', 'critical');
-      } else if (level >= 0.3) {
-        message.properties.add('level', 'normal');
-      } else {
-        message.properties.add('level', 'storage');
-      }
+      message.properties.add('level', levelValue);
       console.log('Sending message: ' + message.getData());
 
       // Send the message.
