@@ -16,7 +16,7 @@ var client = Client.fromConnectionString(connectionString, Protocol);
 const chalk = require('chalk');
 const myDeviceId = 'Contoso-Test-Device';
 
-console.log('IoT Hub troubleshooting tutorial\nSimulated device #3\n')
+console.log('IoT Hub routing tutorial\nSimulated device\n')
 
 // Print results.
 function printResultFor(op) {
