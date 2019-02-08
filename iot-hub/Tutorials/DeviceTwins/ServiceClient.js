@@ -8,7 +8,7 @@ var Registry = require('azure-iothub').Registry;
 
 // Get the service connection string from a command line argument
 var connectionString = process.argv[2];
-var deviceId = 'TwinTesting';
+var deviceId = 'MyTwinDevice';
 
 // Sleep function to simulate delays
 function sleep(ms){
