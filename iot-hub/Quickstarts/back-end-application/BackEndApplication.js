@@ -13,7 +13,7 @@
 // https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-security
 //
 // Using the Azure CLI:
-// az iot hub show-connection-string --hub-name {YourIoTHubName} --output table
+// az iot hub show-connection-string --hub-name {YourIoTHubName} --policy-name service --output table
 var connectionString = '{Your service connection string here}';
 
 // Using the Node.js Service SDK for IoT Hub:
