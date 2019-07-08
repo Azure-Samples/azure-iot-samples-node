@@ -44,7 +44,7 @@ var printMessage = function (message) {
 // This example only reads messages sent after this application started.
 var ehClient;
 EventHubClient.createFromIotHubConnectionString(connectionString).then(function (client) {
-  console.log("Successully created the EventHub Client from iothub connection string.");
+  console.log("Successfully created the EventHub Client from iothub connection string.");
   ehClient = client;
   return ehClient.getPartitionIds();
 }).then(function (ids) {
