@@ -1,6 +1,6 @@
 ---
-topic: sample
-description: A set of easy-to-understand, continuously-tested samples for connecting to Azure IoT Hub with Azure IoT SDK for Node.js.
+page_type: sample
+description: "A set of easy-to-understand, continuously-tested samples for connecting to Azure IoT Hub with Azure IoT SDK for Node.js."
 languages:
 - javascript
 products:
