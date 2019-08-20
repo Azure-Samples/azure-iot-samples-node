@@ -14,7 +14,7 @@ azure-iot-samples-node provides a set of easy-to-understand, continuously-tested
 
 ## Prerequisites
 
-- Node.js v4.x.x or later on your development machine.  You can download Node.js for multiple platforms from [nodejs.org](https://nodejs.org).  You can verify the current version of Node.js on your development machine using "node --version"
+- Node.js LTS or Current version on your development machine.  You can download Node.js for multiple platforms from [nodejs.org](https://nodejs.org).  You can verify the current version of Node.js on your development machine using "node --version"
 
 ## Resources
 
