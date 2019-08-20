@@ -41,7 +41,7 @@ async function main() {
   digitalTwinClient.addInterfaceInstance(deviceInformation);
   await digitalTwinClient.register();
 
-  // report all of the device information.
+  // report all of the device information
   await deviceInformation.manufacturer.report('Contoso Device Corporation');
   await deviceInformation.model.report('Contoso 4762B-turbo');
   await deviceInformation.swVersion.report('3.1');

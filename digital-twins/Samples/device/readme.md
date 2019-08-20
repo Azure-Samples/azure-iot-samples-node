@@ -9,4 +9,4 @@ They show how to:
 
 Please note that the `DigitalTwinClient` depends on the `Client` class from `azure-iot-device` to communicate with the hub. The sample shows how to compose these two together.
 
-To get started with these samples, Please refer to the instructions in each of the folder.
+To get started with these samples, please refer to the instructions in each of the folder.

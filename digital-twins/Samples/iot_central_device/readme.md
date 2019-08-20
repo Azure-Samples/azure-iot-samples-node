@@ -37,7 +37,7 @@ node sample_device.js
 
 ## What does this sample do?
 
-`environmentalinterface.js` shows how to create a interface class based on the Environmental Sensor interface published in the global model repository.
+`environmentalinterface.js` shows how to create a interface class based on the Environmental Sensor interface published in the public model repository.
 
 `sample_device.js` shows how to:
 - instantiate a `ProvisioningDeviceClient` to proceed with the device registration.

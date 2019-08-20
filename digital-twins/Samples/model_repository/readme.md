@@ -31,7 +31,7 @@ $ node model_repo.js
 
 ## What does this sample do?
 
-The first part of the sample shows a really simplistic implementation of a class that generates an authentication token for the model repository client.
+The first part of the sample shows a simplistic implementation of a class that generates an authentication token for the model repository client.
 
 The second part shows how to use the client to run a full text search on existing models.
 
