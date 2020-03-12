@@ -1,3 +1,4 @@
+
 /*
 * IoT Hub Raspberry Pi NodeJS - Microsoft Sample Code - Copyright (c) 2017 - Licensed MIT
 */
@@ -7,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const wpi = require('node-wiring-pi');
+const gpio = require('onoff').Gpio;
 
 const Client = require('azure-iot-device').Client;
 const ConnectionString = require('azure-iot-device').ConnectionString;
@@ -82,14 +83,14 @@ function receiveMessageCallback(msg) {
     console.log('Received message:\n\t' + message);
   });
 }
-
 function blinkLED() {
   // Light up LED for 500 ms
-  wpi.digitalWrite(config.LEDPin, 1);
-  setTimeout(function () {
-    wpi.digitalWrite(config.LEDPin, 0);
-  }, 500);
-}
+    const led = new gpio(18, 'out');
+    led.writeSync(1);
+    setTimeout(function () {
+        led.writeSync(0);
+      }, 500);
+    }
 
 function initClient(connectionStringParam, credentialPath) {
   var connectionString = ConnectionString.parse(connectionStringParam);
@@ -146,9 +147,7 @@ function initClient(connectionStringParam, credentialPath) {
     return;
   }
 
-  // set up wiring
-  wpi.setup('wpi');
-  wpi.pinMode(config.LEDPin, wpi.OUTPUT);
+ 
   messageProcessor = new MessageProcessor(config);
 
   try {
