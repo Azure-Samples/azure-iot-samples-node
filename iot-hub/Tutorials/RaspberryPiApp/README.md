@@ -9,11 +9,9 @@ products:
 ---
 # IoT Hub Raspberry Pi 3 Client application
 
-[![Build Status](https://travis-ci.com/Azure-Samples/iot-hub-node-raspberrypi-client-app.svg?token=5ZpmkzKtuWLEXMPjmJ6P&branch=master)](https://travis-ci.com/Azure-Samples/iot-hub-node-raspberrypi-client-app)
+This folder contains the source code to help you get familiar with Azure IoT using the Microsoft IoT Pack for Raspberry Pi 3 Starter Kit. You will find the [lesson-based tutorials on Azure.com](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-raspberry-pi-kit-node-get-started).
 
-> This repo contains the source code to help you get familiar with Azure IoT using the Microsoft IoT Pack for Raspberry Pi 3 Starter Kit. You will find the [lesson-based tutorials on Azure.com](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-raspberry-pi-kit-node-get-started).
-
-This repo contains an arduino application that runs on Raspberry Pi 3 with a BME280 temperature&humidity sensor, and then sends these data to your IoT Hub. Also, this application receives Cloud-to-Device message from your IoT Hub, and takes actions according to the C2D command.
+The tutorial enables an arduino application that runs on Raspberry Pi 3 with a BME280 temperature&humidity sensor, and then sends these data to your IoT Hub. Also, this application receives Cloud-to-Device message from your IoT Hub, and takes actions according to the C2D command.
 
 ## Set up your Pi
 
