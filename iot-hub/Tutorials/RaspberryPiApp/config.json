@@ -1,0 +1,16 @@
+{
+  "simulatedData": false,
+  "interval": 2000,
+  "deviceId": "Raspberry Pi Node",
+  "LEDPin": 5,
+  "messageMax": 256,
+  "credentialPath": "~/.iot-hub",
+  "temperatureAlert": 30,
+  "transport": "mqtt",
+  "iotEdgeRootCertFilePath": null,
+  "i2cOption": {
+    "pin": 9,
+    "i2cBusNo": 1,
+    "i2cAddress": 119
+  }
+}
