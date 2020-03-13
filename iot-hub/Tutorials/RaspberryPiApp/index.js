@@ -85,7 +85,7 @@ function receiveMessageCallback(msg) {
 }
 function blinkLED() {
   // Light up LED for 500 ms
-    const led = new gpio(18, 'out');
+    const led = new gpio(config.LEDPinGPIO, 'out');
     led.writeSync(1);
     setTimeout(function () {
         led.writeSync(0);
