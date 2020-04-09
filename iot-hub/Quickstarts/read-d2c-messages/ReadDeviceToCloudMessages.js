@@ -119,14 +119,16 @@ var printError = function (err) {
 // - Telemetry is sent in the message body
 // - The device can add arbitrary properties to the message
 // - IoT Hub adds system properties, such as Device Id, to the message.
-var printMessage = function (message) {
-  console.log("Telemetry received: ");
-  console.log(JSON.stringify(message.body));
-  console.log("Properties (set by device): ");
-  console.log(JSON.stringify(message.userProperties));
-  console.log("System properties (set by IoT Hub): ");
-  console.log(JSON.stringify(message.systemProperties));
-  console.log("");
+var printMessages = function (messages) {
+  for (const message of messages) {
+    console.log("Telemetry received: ");
+    console.log(JSON.stringify(message.body));
+    console.log("Properties (set by device): ");
+    console.log(JSON.stringify(message.userProperties));
+    console.log("System properties (set by IoT Hub): ");
+    console.log(JSON.stringify(message.systemProperties));
+    console.log("");
+  }
 };
 
 async function main() {
@@ -149,7 +151,7 @@ async function main() {
     iotHubName
   );
   consumerClient.subscribe({
-    processEvents: printMessage,
+    processEvents: printMessages,
     processError: printError,
   });
 }
