@@ -124,7 +124,7 @@ var printMessages = function (messages) {
     console.log("Telemetry received: ");
     console.log(JSON.stringify(message.body));
     console.log("Properties (set by device): ");
-    console.log(JSON.stringify(message.userProperties));
+    console.log(JSON.stringify(message.properties));
     console.log("System properties (set by IoT Hub): ");
     console.log(JSON.stringify(message.systemProperties));
     console.log("");
