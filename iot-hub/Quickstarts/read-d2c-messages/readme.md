@@ -1,15 +1,20 @@
 # Notes
 
-## Pre-requisite ##
-- **Node.js version: 6.x or higher.** 
-- We would **still encourage you** to install the latest available LTS version at any given time from https://nodejs.org. **It is a good practice to always install the latest available LTS version of node.js.**
-- Installing node.js on **Windows or macOS** is very simple with available installers on the [node.js website](https://nodejs.org). If you are using a **linux based OS**, then you can find easy to follow, one step installation instructions over [here](https://nodejs.org/en/download/package-manager/).
+This sample demonstrates how to use the Microsoft Azure Event Hubs Client for JavaScript to 
+read messages sent from a device by using the built-in event hubs that exists by default for
+every Iot Hub instance. 
 
-This example uses the [Node.js SDK for Azure Event hubs](https://github.com/Azure/azure-event-hubs-node) to read from your IoT hub's Event Hub-compatible endpoint.
+If you have access to the Event Hubs-compatible endpoint, either via the Azure portal or
+by using the Azure CLI, you can skip the parts in this sample that converts the Iot Hub
+connection string to an Event Hubs compatible one.
 
-Typically, you connect another service to this endpoint to process and deliver the telemetry to its ultimate destination. For example, you can connect the following services to this Events endpoint on IoT Hub:
+The conversion is done by connecting to the IoT hub endpoint and receiving a redirection
+address to the built-in event hubs. This address is then used in the Event Hubs Client to
+read messages.
 
-- Azure Stream Analytics
-- Logic Apps
-- Azure Databricks
-- Spark on HDInsight
+For an example that uses checkpointing, follow up this sample with the [sample that uses
+Azure Storage Blob to create checkpoints](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/eventhub/eventhubs-checkpointstore-blob/samples/javascript/receiveEventsUsingCheckpointStore.js) in the 
+eventhubs-checkpointstore-blob package on GitHub at the following link:
+
+
+
