@@ -146,7 +146,7 @@ async function main() {
   );
 
   const consumerClient = new EventHubConsumerClient(
-    "Default",
+    "$Default",
     eventHubsConnectionString,
     iotHubName
   );
