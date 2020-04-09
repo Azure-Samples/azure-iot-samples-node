@@ -12,6 +12,13 @@ The conversion is done by connecting to the IoT hub endpoint and receiving a red
 address to the built-in event hubs. This address is then used in the Event Hubs Client to
 read messages.
 
+If using the Azure CLI, you will need to run the below before running this sample to get 
+the details required to form the Event Hubs compatible connection string
+
+- `az iot hub show --query properties.eventHubEndpoints.events.endpoint --name {your IoT Hub name}`
+- `az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}`
+- `az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}`
+
 For an example that uses checkpointing, follow up this sample with the [sample that uses
 Azure Storage Blob to create checkpoints](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/eventhub/eventhubs-checkpointstore-blob/samples/javascript/receiveEventsUsingCheckpointStore.js) in the 
 eventhubs-checkpointstore-blob package on GitHub at the following link:

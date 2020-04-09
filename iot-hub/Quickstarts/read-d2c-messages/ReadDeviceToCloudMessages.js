@@ -9,6 +9,13 @@
   by using the Azure CLI, you can skip the parts in this sample that converts the Iot Hub
   connection string to an Event Hubs compatible one.
 
+  If using the Azure CLI, you will need to run the below before running this sample to get 
+  the details required to form the Event Hubs compatible connection string
+
+    az iot hub show --query properties.eventHubEndpoints.events.endpoint --name {your IoT Hub name}
+    az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}
+    az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}
+
   The conversion is done by connecting to the IoT hub endpoint and receiving a redirection
   address to the built-in event hubs. This address is then used in the Event Hubs Client to
   read messages.
@@ -111,6 +118,26 @@ async function convertIotHubToEventHubsConnectionString(connectionString) {
   });
 }
 
+/**
+ * Helper method to form a connection string using the information from running the
+ * Azure CLI.
+ * Note: You need to run Azure CLI as per the comments below outside of this program
+ * and fill in the details.
+ */
+function getEventHubsCompatibleConnectionStringFromAzCLI() {
+  // az iot hub show --query properties.eventHubEndpoints.events.endpoint --name {your IoT Hub name}
+  const eventHubsCompatibleEndpoint = "Run the az command in the comment above to get the endpoint";
+
+  // az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}
+  const eventHubsCompatiblePath = "Run the az command in the comment above to get the path";
+
+  // az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}
+  const sharedAccessKey =
+    "Run the az comand in the comment above to get the Shared Access Key vaule";
+
+  return `Endpoint=${eventHubsCompatibleEndpoint}/;EntityPath=${eventHubsCompatiblePath};SharedAccessKeyName=service;SharedAccessKey=${sharedAccessKey}`;
+}
+
 var printError = function (err) {
   console.log(err.message);
 };
@@ -135,21 +162,17 @@ async function main() {
   console.log("IoT Hub Quickstarts - Read device to cloud messages.");
 
   const iotHubConnectionString = "{your Iot Hub connection string}";
-  const iotHubName = "{your Iot Hub name}";
 
   // You can skip calling convertIotHubToEventHubsConnectionString() to do the conversion
   // if you already have access to the Event Hubs compatible connection string from the
   // Azure portal or the Azure CLI
-  // az iot hub show --query properties.eventHubEndpoints.events.endpoint --name {your IoT Hub name}
+  // If using the Azure CLI, see the getEventHubsCompatibleConnectionStringFromAzCLI() helper
+  // method to form the connection string
   const eventHubsConnectionString = await convertIotHubToEventHubsConnectionString(
     iotHubConnectionString
   );
 
-  const consumerClient = new EventHubConsumerClient(
-    "$Default",
-    eventHubsConnectionString,
-    iotHubName
-  );
+  const consumerClient = new EventHubConsumerClient("$Default", eventHubsConnectionString);
   consumerClient.subscribe({
     processEvents: printMessages,
     processError: printError,
