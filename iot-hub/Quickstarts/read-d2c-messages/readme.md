@@ -9,7 +9,9 @@ every Iot Hub instance.
 You can get the Event Hubs-compatible connection string to your IotHub instance via the Azure portal or
 by using the Azure CLI.
 
-If using the Azure portal, see [Built in endpoints for IotHub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-read-builtin#read-from-the-built-in-endpoint)
+If using the Azure portal, see [Built in endpoints for IotHub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-read-builtin#read-from-the-built-in-endpoint) to get the Event Hubs-compatible
+connection string and assign it to the constant `connectionString` in the sample. You can skip the Azure CLI
+instructions in the sample after this.
 
 If using the Azure CLI, you will need to run the below before running this sample to get 
 the details required to form the Event Hubs compatible connection string

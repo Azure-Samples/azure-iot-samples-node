@@ -56,6 +56,8 @@ async function main() {
   // az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}
   const s_iotHubSasKey = "{your service primary key}";
 
+  // If you have access to the Event Hub-compatible connection string from the Azure portal, then
+  // you can skip the Azure CLI commands above, and assign the connection string directly here.
   const connectionString = `Endpoint=${s_eventHubsCompatibleEndpoint}/;EntityPath=${s_eventHubsCompatiblePath};SharedAccessKeyName=service;SharedAccessKey=${s_iotHubSasKey}`;
 
   // If using websockets, uncomment the webSocketOptions below
