@@ -14,12 +14,28 @@
 
 const { EventHubConsumerClient } = require("@azure/event-hubs");
 
-// If using websockets, uncomment the below require statement
+// If using websockets, uncomment the following require statement
 // const WebSocket = require("ws");
 
 // If you need proxy support, uncomment the below code to create proxy agent
 // const HttpsProxyAgent = require("https-proxy-agent");
 // const proxyAgent = new HttpsProxyAgent(proxyInfo);
+
+// Event Hub-compatible endpoint
+// az iot hub show --query properties.eventHubEndpoints.events.endpoint --name {your IoT Hub name}
+const eventHubsCompatibleEndpoint = "{your Event Hubs compatible endpoint}";
+
+// Event Hub-compatible name
+// az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}
+const eventHubsCompatiblePath = "{your Event Hubs compatible name}";
+
+// Primary key for the "service" policy to read messages
+// az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}
+const iotHubSasKey = "{your service primary key}";
+
+// If you have access to the Event Hub-compatible connection string from the Azure portal, then
+// you can skip the Azure CLI commands above, and assign the connection string directly here.
+const connectionString = `Endpoint=${eventHubsCompatibleEndpoint}/;EntityPath=${eventHubsCompatiblePath};SharedAccessKeyName=service;SharedAccessKey=${iotHubSasKey}`;
 
 var printError = function (err) {
   console.log(err.message);
@@ -44,25 +60,8 @@ var printMessages = function (messages) {
 async function main() {
   console.log("IoT Hub Quickstarts - Read device to cloud messages.");
 
-  // Event Hub-compatible endpoint
-  // az iot hub show --query properties.eventHubEndpoints.events.endpoint --name {your IoT Hub name}
-  const s_eventHubsCompatibleEndpoint = "{your Event Hubs compatible endpoint}";
-
-  // Event Hub-compatible name
-  // az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}
-  const s_eventHubsCompatiblePath = "{your Event Hubs compatible name}";
-
-  // Primary key for the "service" policy to read messages
-  // az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}
-  const s_iotHubSasKey = "{your service primary key}";
-
-  // If you have access to the Event Hub-compatible connection string from the Azure portal, then
-  // you can skip the Azure CLI commands above, and assign the connection string directly here.
-  const connectionString = `Endpoint=${s_eventHubsCompatibleEndpoint}/;EntityPath=${s_eventHubsCompatiblePath};SharedAccessKeyName=service;SharedAccessKey=${s_iotHubSasKey}`;
-
   // If using websockets, uncomment the webSocketOptions below
-  // If using proxy, then set `webSocketConstructorOptions` to
-  // { agent: proxyAgent }
+  // If using proxy, then set `webSocketConstructorOptions` to { agent: proxyAgent }
   // You can also use the `retryOptions` in the client options to configure the retry policy
   const clientOptions = {
     // webSocketOptions: {
