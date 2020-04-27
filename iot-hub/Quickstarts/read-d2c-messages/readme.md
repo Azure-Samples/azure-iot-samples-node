@@ -18,6 +18,11 @@ the details required to form the Event Hubs compatible connection string
 - `az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}`
 - `az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}`
 
+If you can do neither of the above and need to programatically get this information,
+then use the [sample to convert IotHub connection string to an Event Hubs-compatible one](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/eventhub/event-hubs/samples/javascript/iothubConnectionString.js). This conversion is done by connecting to 
+the IoT hub endpoint and receiving a redirection address to the built-in event hubs. This address is then used 
+in the Event Hubs Client to read messages.
+
 ## Checkpointing
 
 For an example that uses checkpointing, follow up this sample with the [sample that uses
