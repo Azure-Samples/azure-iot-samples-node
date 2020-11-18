@@ -35,7 +35,7 @@ const iotHubSasKey = "{your service primary key}";
 
 // If you have access to the Event Hub-compatible connection string from the Azure portal, then
 // you can skip the Azure CLI commands above, and assign the connection string directly here.
-const connectionString = `Endpoint=${eventHubsCompatibleEndpoint}/;EntityPath=${eventHubsCompatiblePath};SharedAccessKeyName=service;SharedAccessKey=${iotHubSasKey}`;
+const connectionString = `Endpoint=${eventHubsCompatibleEndpoint};EntityPath=${eventHubsCompatiblePath};SharedAccessKeyName=service;SharedAccessKey=${iotHubSasKey}`;
 
 var printError = function (err) {
   console.log(err.message);
