@@ -38,11 +38,11 @@ var firmwareConfig = {
   // Maximum of 5 metrics per configuration
   metrics: {
     queries: {
-      current: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'current\'',
-      applying: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND ( properties.reported.firmware.fwUpdateStatus=\'downloading\' OR properties.reported.firmware.fwUpdateStatus=\'verifying\' OR properties.reported.firmware.fwUpdateStatus=\'applying\')',
-      rebooting: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'rebooting\'',
-      error: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'error\'',
-      rolledback: 'SELECT deviceId FROM devices WHERE configurations.[[firmware285]].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'rolledback\''
+      current: 'SELECT deviceId FROM devices WHERE configurations.[['+sampleConfigId+']].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'current\'',
+      applying: 'SELECT deviceId FROM devices WHERE configurations.[['+sampleConfigId+']].status=\'Applied\' AND ( properties.reported.firmware.fwUpdateStatus=\'downloading\' OR properties.reported.firmware.fwUpdateStatus=\'verifying\' OR properties.reported.firmware.fwUpdateStatus=\'applying\')',
+      rebooting: 'SELECT deviceId FROM devices WHERE configurations.[['+sampleConfigId+']].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'rebooting\'',
+      error: 'SELECT deviceId FROM devices WHERE configurations.[['+sampleConfigId+']].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'error\'',
+      rolledback: 'SELECT deviceId FROM devices WHERE configurations.[['+sampleConfigId+']].status=\'Applied\' AND properties.reported.firmware.fwUpdateStatus=\'rolledback\''
     }
   },
 
