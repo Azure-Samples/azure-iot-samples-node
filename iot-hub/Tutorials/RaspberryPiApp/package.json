@@ -12,7 +12,7 @@
     "azure-iot-device-mqtt": "^1.9.3",
     "azure-iot-device-amqp": "^1.9.3",
     "bme280-sensor": "^0.1.6",
-    "onoff": "^5.0.1"
+    "onoff": "^6.0.0"
   },
   "license": "MIT",
   "devDependencies": {
