@@ -41,7 +41,9 @@ function sendMessage() {
       if (err) {
         console.error('[Device] Failed to send message to Azure IoT Hub due to:\n\t' + err.message);
       } else {
-        blinkLED();
+        if (!config.simulatedData) {
+          blinkLED();
+        }        
         console.log('[Device] Message sent to Azure IoT Hub');
       }
 
