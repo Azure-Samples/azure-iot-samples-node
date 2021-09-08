@@ -22,11 +22,6 @@ async function main() {
   var registry = iothub.Registry.fromConnectionString(iothubConnectionString);
   var blobSvc = azureStorage.BlobServiceClient.fromConnectionString(storageConnectionString);
 
-  var accountName = "<storage-account-name>";
-  var key = "<storage-account-key>";
-
-  var credential = new azureStorage.StorageSharedKeyCredential(accountName, key);
-
   var startDate = new Date();
   var expiryDate = new Date(startDate);
   expiryDate.setMinutes(startDate.getMinutes() + 100);
@@ -36,20 +31,6 @@ async function main() {
   var outputContainerName = "exportcontainer";
   var deviceFile = "devices.txt";
 
-  var inputSASSignatureValues = {
-    containerName: inputContainerName,
-    permissions: azureStorage.AccountSASPermissions.parse("rl"),
-    startsOn: startDate,
-    expiresOn: expiryDate,
-  };
-
-  var outputSASSignatureValues = {
-    containerName: outputContainerName,
-    permissions: azureStorage.AccountSASPermissions.parse("rwd"),
-    startsOn: startDate,
-    expiresOn: expiryDate,
-  };
-
   var inputContainerClient = blobSvc.getContainerClient(inputContainerName);
 
   try {
@@ -57,9 +38,11 @@ async function main() {
   } catch (err) {
     console.error("Could not create input container: " + err.message);
   }
-
-  var inputSasToken = azureStorage.generateBlobSASQueryParameters(inputSASSignatureValues, credential).toString();
-  var inputSasUrl = inputContainerClient.url + "?" + inputSasToken;
+  var inputSasUrl = inputContainerClient.generateSasUrl({
+    startsOn:startDate,
+    expiresOn:expiryDate,
+    permissions:azureStorage.AccountSASPermissions.parse("rl")
+  })
 
   var blobClient = inputContainerClient.getBlockBlobClient(deviceFile);
 
@@ -77,8 +60,11 @@ async function main() {
     console.error("Could not create output container: " + err.message);
   }
 
-  var outputSasToken = azureStorage.generateBlobSASQueryParameters(outputSASSignatureValues, credential).toString();
-  var outputSasUrl = outputContainerClient.url + "?" + outputSasToken;
+  var outputSasUrl = outputContainerClient.generateSasUrl({
+    startsOn:startDate,
+    expiresOn:expiryDate,
+    permissions:azureStorage.AccountSASPermissions.parse("rwd")
+  })
 
   /**
    * There can only be one active job at a time, therefore, you can uncomment the export section and comment the import
