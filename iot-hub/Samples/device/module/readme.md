@@ -11,12 +11,12 @@ This folder contains simple samples showing how to use the various features of t
 ## How to run the samples
 
 In order to run the device samples you will first need the following prerequisites:
-* Node.js v6.x.x or above on your target device. (Check out [Nodejs.org](https://nodejs.org/) for more info)
+
+* Node.js - [https://nodejs.dev/en/about/releases/](Currently supported release)
 * [Create an Azure IoT Hub instance][lnk-setup-iot-hub]
 * [Create a device identity for your device][lnk-manage-iot-hub]
 
 Then, download the `package.json` file and the `sample.js` file that you want to run:
-
 
 Finally, in order to run the samples:
 
