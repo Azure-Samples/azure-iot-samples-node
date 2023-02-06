@@ -12,7 +12,7 @@ This folder contains simple samples showing how to use the various features of t
 
 In order to run the device samples you will first need the following prerequisites:
 
-* Node.js - [https://nodejs.dev/en/about/releases/](Currently supported release)
+* Node.js - [Currently supported release](https://nodejs.dev/en/about/releases)
 * [Create an Azure IoT Hub instance][lnk-setup-iot-hub]
 * [Create a device identity for your device][lnk-manage-iot-hub]
 
