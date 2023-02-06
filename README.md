@@ -1,12 +1,9 @@
----
-page_type: sample
-description: "A set of easy-to-understand, continuously-tested samples for connecting to Azure IoT Hub with Azure IoT SDK for Node.js."
-languages:
-- javascript
-products:
-- azure
-- azure-iot-hub
----
+
+# :exclamation: ARCHIVED
+
+> **Warning**  
+> All the samples have been moved to our main repository [azure-iot-sdk-node](https://github.com/Azure/azure-iot-sdk-node).  
+> Please submit an Issue or PR in the [azure-iot-sdk-node](https://github.com/Azure/azure-iot-sdk-node) repository if there are additional samples you would like to see.
 
 # Azure IoT Samples for Node.js
 
