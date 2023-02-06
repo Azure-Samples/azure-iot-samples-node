@@ -22,7 +22,7 @@ ModuleClient.fromEnvironment(Protocol, function (err, client) {
       } else {
         console.log('Client connected');
 
-        client.onMethod('<methodName>', function(request, response) {
+        client.onDeviceMethod('<methodName>', function(request, response) {
           console.log('<methodName> called');
 
           if(request.payload) {
